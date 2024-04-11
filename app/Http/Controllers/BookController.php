@@ -36,7 +36,7 @@ class BookController extends Controller
     public function index()
     {
         return view('books.index', [
-            'books' => $books = $this->bookRepository->getAllPaginated()
+            'books' => $this->bookRepository->getAllPaginated()
         ]);
     }
 
