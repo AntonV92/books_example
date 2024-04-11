@@ -6,8 +6,10 @@ use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Interfaces\BookRepositoryInterface;
 use App\Models\Book;
+use App\Services\FileCSVService;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 
 /**
@@ -96,29 +98,20 @@ class BookController extends Controller
         return redirect()->route('books.index');
     }
 
-    public function export(int $page)
+    /**
+     * @param int $page
+     * @return StreamedResponse
+     */
+    public function export(int $page): StreamedResponse
     {
         $books = $this->bookRepository->getFromCurrentPage($page);
+        $data = [
+            ['Title', 'Author', 'Publication Date', 'Genre'],
+        ];
+        foreach ($books as $book) {
+            $data[] = [$book->title, $book->author, $book->pub_date, $book->genre];
+        }
 
-        $headers = array(
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=books.csv",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0",
-            "Location" => 'books'
-        );
-
-        $callback = function () use ($books) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Title', 'Author', 'Publication Date', 'Genre']);
-
-            foreach ($books as $book) {
-                fputcsv($file, [$book->title, $book->author, $book->pub_date, $book->genre]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return FileCSVService::getExportFileStream($data, "books.csv");
     }
 }

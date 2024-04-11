@@ -37,10 +37,10 @@
                     </table>
                     {{ $books->links() }}
                     <hr>
-                    <a href="books/create"> Add new book</a>
+                    <a href="{{ route('books.create') }}"> Add new book</a>
                     <hr>
                     <div>
-                        <a href="{{ route('books.export', request()->query('page')) }}">Export CSV</a>
+                        <a href="{{ route('books.export', request()->query('page', 1)) }}">Export CSV</a>
                     </div>
                 </div>
             </div>
