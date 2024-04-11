@@ -4,20 +4,41 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
+use App\Interfaces\BookRepositoryInterface;
 use App\Models\Book;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 
+/**
+ * @class BookController
+ */
 class BookController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * @var BookRepositoryInterface
      */
-    public function index()
+    private BookRepositoryInterface $bookRepository;
+
+    /**
+     * @param BookRepositoryInterface $bookRepository
+     */
+    public function __construct(BookRepositoryInterface $bookRepository)
     {
-        return "Hello world";
+        $this->bookRepository = $bookRepository;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * @return Application
+     */
+    public function index()
+    {
+        return view('books.index', [
+            'books' => $this->bookRepository->getAll()
+        ]);
+    }
+
+    /**
+     * @return Application
      */
     public function create()
     {
@@ -25,49 +46,52 @@ class BookController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @param StoreBookRequest $request
+     * @return RedirectResponse
      */
     public function store(StoreBookRequest $request)
     {
-        $book = new Book();
-        $book->title = $request->input('title');
-        $book->author = $request->input('author');
-        $book->pub_date = $request->input('pub_date');
-        $book->genre = $request->input('genre');
-        $book->created_at = time();
-        $book->updated_at = time();
-        $book->save();
+        $this->bookRepository->create($request->all());
+        return redirect()->route('books.index');
     }
 
     /**
-     * Display the specified resource.
+     * @param int $id
      */
-    public function show(Book $book)
+    public function show(int $id)
     {
-        //
+        return view('books.show', [
+            'book' => $this->bookRepository->getById($id)
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * @param int $id
      */
-    public function edit(Book $book)
+    public function edit(int $id)
     {
-        //
+        return view('books.edit', [
+            'book' => $this->bookRepository->getById($id)
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * @param UpdateBookRequest $request
+     * @param Book $book
      */
     public function update(UpdateBookRequest $request, Book $book)
     {
-        //
+        $this->bookRepository->update($book, $request->all());
+        return redirect()->route('books.index');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @param Book $book
+     * @return RedirectResponse
      */
     public function destroy(Book $book)
     {
-        //
+        $this->bookRepository->delete($book);
+        return redirect()->route('books.index');
     }
 }
