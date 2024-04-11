@@ -35,8 +35,13 @@
                         @endforeach
                         </tbody>
                     </table>
+                    {{ $books->links() }}
                     <hr>
                     <a href="books/create"> Add new book</a>
+                    <hr>
+                    <div>
+                        <a href="{{ route('books.export', request()->query('page')) }}">Export CSV</a>
+                    </div>
                 </div>
             </div>
         </div>

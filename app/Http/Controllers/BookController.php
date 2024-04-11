@@ -9,6 +9,7 @@ use App\Models\Book;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 
+
 /**
  * @class BookController
  */
@@ -33,7 +34,7 @@ class BookController extends Controller
     public function index()
     {
         return view('books.index', [
-            'books' => $this->bookRepository->getAll()
+            'books' => $books = $this->bookRepository->getAllPaginated()
         ]);
     }
 
@@ -93,5 +94,31 @@ class BookController extends Controller
     {
         $this->bookRepository->delete($book);
         return redirect()->route('books.index');
+    }
+
+    public function export(int $page)
+    {
+        $books = $this->bookRepository->getFromCurrentPage($page);
+
+        $headers = array(
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=books.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0",
+            "Location" => 'books'
+        );
+
+        $callback = function () use ($books) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Title', 'Author', 'Publication Date', 'Genre']);
+
+            foreach ($books as $book) {
+                fputcsv($file, [$book->title, $book->author, $book->pub_date, $book->genre]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

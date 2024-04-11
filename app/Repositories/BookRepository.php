@@ -10,6 +10,8 @@ use App\Models\Book;
  */
 class BookRepository implements BookRepositoryInterface
 {
+    public const BOOKS_PER_PAGE = 10;
+
     /**
      * @var Book
      */
@@ -20,9 +22,28 @@ class BookRepository implements BookRepositoryInterface
         $this->model = $model;
     }
 
-    public function getAll(): array
+    public function getAll()
     {
-        return $this->model->all()->all();
+        return $this->model->all();
+    }
+
+    /**
+     * @param $perPage
+     * @return mixed
+     */
+    public function getAllPaginated($perPage = self::BOOKS_PER_PAGE)
+    {
+        return $this->model->paginate($perPage);
+    }
+
+    /**
+     * @param $page
+     * @return mixed
+     */
+    public function getFromCurrentPage($page = 1)
+    {
+        $offset = $page - 1;
+        return $this->model::offset($offset)->limit(self::BOOKS_PER_PAGE)->get();
     }
 
     /**

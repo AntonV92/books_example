@@ -15,7 +15,19 @@ interface BookRepositoryInterface
     /**
      * @return array
      */
-    public function getAll(): array;
+    public function getAll();
+
+    /**
+     * @param $perPage
+     * @return mixed
+     */
+    public function getAllPaginated($perPage = 10);
+
+    /**
+     * @param $page
+     * @return mixed
+     */
+    public function getFromCurrentPage($page = 1);
 
     /**
      * @param int $id
